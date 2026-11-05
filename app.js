@@ -1,43 +1,31 @@
 const express = require("express")
+const multer = require("multer")
+const uploadFile = require("./services/storage.services")
+const postModel = require("./models/post.model")
 
 const app = express()
 app.use(express.json())
 
-const notes = []
+const upload = multer({ storage: multer.memoryStorage( )})
 
-app.post("/notes", (req,res) => {
+app.post("/create-post",upload.single("image") ,async (req,res) => {
+
     console.log(req.body)
-})
->> OP : { title: title ,
-        description : description } this will print in the vs terminal 
+    console.log(req.file)
 
-app.post("/notes", (req,res) => {
-    notes.push(req.body)
-    res.status(201),json( {
-        message : "Notes created successfully"
-    })
-})
->>OP : "Notes created successfully"
-        { title: title ,
-        description : description } this will print in the postman terminal
+     const result = await uploadFile(req.file.buffer)
 
-app.patch('/notes/:index',(req,res) => {
+     const post = await postModel.create({
 
-    const index = req.param.index
-    const description = req.body.description
+        image : result.url ,
+        caption : req.body.caption 
 
-    notes [index].description = description
+     })
 
-    res.status(202),json({
-        message : "notes updated successfully"
-    })
+     res.status(200).json({
+        message : "post is created" ,
+        post
+     })
+
 })
 
-app.delete('/notes/:index' ,(req,res)=> {
-
-    const index = req.params.index
-    delete notes [index]   
-    res.status(202),json({
-        message : "notes deleted successfully"
-    })
-} )
